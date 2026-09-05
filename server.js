@@ -7,7 +7,12 @@ const app = express();
 app.use(cors({
   origin: [
     'http://localhost:5173',
-    'https://YOUR-VERCEL-URL.vercel.app' // update this once frontend is deployed
+    app.use(cors({
+  origin: [
+    'http://localhost:5173',
+    'https://wholesale-shop-nu.vercel.app'
+]
+})); // update this once frontend is deployed
 ]
 }));
 app.use(express.json());
