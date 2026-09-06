@@ -1,5 +1,6 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
+const mongoose = require('mongoose');
 const router = express.Router();
 
 function auth(req, res, next) {
@@ -48,7 +49,7 @@ module.exports = (Order) => {
       if (req.user.role === 'delivery') {
         // Delivery persons care about what THEY delivered in this time range,
         // scoped by when they actually delivered it, not when the customer ordered it
-        const deliveryMatch = { claimedBy: req.user.id, deliveredAt: { $gte: rangeStart } };
+        const deliveryMatch = { claimedBy: new mongoose.Types.ObjectId(req.user.id), deliveredAt: { $gte: rangeStart } };
 
         delivered = await Order.countDocuments({ ...deliveryMatch, status: 'delivered' });
 
