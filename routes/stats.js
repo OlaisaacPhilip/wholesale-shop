@@ -46,15 +46,20 @@ module.exports = (Order) => {
 
       let ordersIn, delivered, totalRevenue;
 
+      let pending;
+
       if (req.user.role === 'delivery') {
-        // Delivery persons care about what THEY delivered in this time range,
-        // scoped by when they actually delivered it, not when the customer ordered it
-        const deliveryMatch = { claimedBy: new mongoose.Types.ObjectId(req.user.id), deliveredAt: { $gte: rangeStart } };
+        const deliveryUserId = new mongoose.Types.ObjectId(req.user.id);
+        const deliveryMatch = { claimedBy: deliveryUserId, deliveredAt: { $gte: rangeStart } };
 
         delivered = await Order.countDocuments({ ...deliveryMatch, status: 'delivered' });
 
         // "Orders In" for a delivery person means orders they claimed in this range
-        ordersIn = await Order.countDocuments({ claimedBy: req.user.id, claimedAt: { $gte: rangeStart } });
+        ordersIn = await Order.countDocuments({ claimedBy: deliveryUserId, claimedAt: { $gte: rangeStart } });
+
+        // "Pending" is a live snapshot — how many orders they currently hold
+        // that are claimed but not yet delivered, independent of the date filter
+        pending = await Order.countDocuments({ claimedBy: deliveryUserId, status: 'claimed' });
 
         const revenueResult = await Order.aggregate([
           { $match: { ...deliveryMatch, status: 'delivered' } },
@@ -62,12 +67,13 @@ module.exports = (Order) => {
         ]);
         totalRevenue = revenueResult[0]?.total || 0;
 
-      } else {
+} else {
         // Admin: store-wide activity, scoped by when orders were placed
         const matchStage = { createdAt: { $gte: rangeStart } };
 
         ordersIn = await Order.countDocuments(matchStage);
         delivered = await Order.countDocuments({ ...matchStage, status: 'delivered' });
+        pending = ordersIn - delivered; // safe here — both scoped by the same createdAt field
 
         const revenueResult = await Order.aggregate([
           { $match: { ...matchStage, status: { $in: ['available', 'claimed', 'delivered'] } } },
@@ -80,7 +86,7 @@ module.exports = (Order) => {
         range,
         ordersIn,
         delivered,
-        pending: ordersIn - delivered,
+        pending,
         totalRevenue
       });
     } catch (err) {
