@@ -60,7 +60,7 @@ module.exports = (Order) => {
       });
 
       const totalRevenue = await Order.aggregate([
-        { $match: { ...matchStage, status: { $in: ['paid', 'claimed', 'delivered'] } } },
+        { $match: { ...matchStage, status: { $in: ['available', 'claimed', 'delivered'] } } },
         { $group: { _id: null, total: { $sum: '$totalAmount' } } }
       ]);
 
