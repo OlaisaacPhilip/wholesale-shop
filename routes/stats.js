@@ -43,33 +43,44 @@ module.exports = (Order) => {
       const range = req.query.range || 'day';
       const rangeStart = getRangeStart(range);
 
-      // scope: admin sees everything, delivery sees only their own claimed/delivered orders
-      const matchStage = { createdAt: { $gte: rangeStart } };
+      let ordersIn, delivered, totalRevenue;
 
       if (req.user.role === 'delivery') {
-        matchStage.claimedBy = req.user.id;
+        // Delivery persons care about what THEY delivered in this time range,
+        // scoped by when they actually delivered it, not when the customer ordered it
+        const deliveryMatch = { claimedBy: req.user.id, deliveredAt: { $gte: rangeStart } };
+
+        delivered = await Order.countDocuments({ ...deliveryMatch, status: 'delivered' });
+
+        // "Orders In" for a delivery person means orders they claimed in this range
+        ordersIn = await Order.countDocuments({ claimedBy: req.user.id, claimedAt: { $gte: rangeStart } });
+
+        const revenueResult = await Order.aggregate([
+          { $match: { ...deliveryMatch, status: 'delivered' } },
+          { $group: { _id: null, total: { $sum: '$totalAmount' } } }
+        ]);
+        totalRevenue = revenueResult[0]?.total || 0;
+
+      } else {
+        // Admin: store-wide activity, scoped by when orders were placed
+        const matchStage = { createdAt: { $gte: rangeStart } };
+
+        ordersIn = await Order.countDocuments(matchStage);
+        delivered = await Order.countDocuments({ ...matchStage, status: 'delivered' });
+
+        const revenueResult = await Order.aggregate([
+          { $match: { ...matchStage, status: { $in: ['available', 'claimed', 'delivered'] } } },
+          { $group: { _id: null, total: { $sum: '$totalAmount' } } }
+        ]);
+        totalRevenue = revenueResult[0]?.total || 0;
       }
-      // admin: no extra filter, sees all orders
-      // (customers could be blocked entirely, or given their own order count later)
-
-      const ordersIn = await Order.countDocuments(matchStage);
-
-      const delivered = await Order.countDocuments({
-        ...matchStage,
-        status: 'delivered'
-      });
-
-      const totalRevenue = await Order.aggregate([
-        { $match: { ...matchStage, status: { $in: ['available', 'claimed', 'delivered'] } } },
-        { $group: { _id: null, total: { $sum: '$totalAmount' } } }
-      ]);
 
       res.json({
         range,
         ordersIn,
         delivered,
         pending: ordersIn - delivered,
-        totalRevenue: totalRevenue[0]?.total || 0
+        totalRevenue
       });
     } catch (err) {
       res.status(500).json({ message: 'Server error', error: err.message });
