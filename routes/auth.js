@@ -79,6 +79,16 @@ module.exports = (User, Shop) => {
         return res.status(400).json({ message: 'Invalid email or password' });
       }
 
+      // Block login for anyone belonging to a held shop (admin, delivery, or customer)
+      if (user.shopId) {
+        const shop = await Shop.findById(user.shopId);
+        if (shop && shop.status === 'held') {
+          return res.status(403).json({
+            message: `This shop is currently on hold. Contact 07077941592 (call) or 07013297651 (WhatsApp) for details.`
+          });
+        }
+      }
+
       const token = jwt.sign(
         { id: user._id, role: user.role, shopId: user.shopId },
         process.env.JWT_SECRET,

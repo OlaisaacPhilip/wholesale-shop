@@ -11,6 +11,7 @@ import MyDeliveries from './pages/MyDeliveries';
 import Dashboard from './pages/Dashboard';
 import PendingShops from './pages/PendingShops';
 import ManageTeam from './pages/ManageTeam';
+import AllShops from './pages/AllShops';
 
 function App() {
   return (
@@ -29,6 +30,7 @@ function App() {
        <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/pending-shops" element={<PendingShops />} />
       <Route path="/manage-team" element={<ManageTeam />} />
+      <Route path="/all-shops" element={<AllShops />} />
     </Routes>
   );
 }
