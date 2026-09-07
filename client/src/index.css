@@ -29,7 +29,7 @@ h3, h4 {
   margin: 4px 0;
 }
 
-input, textarea, select {
+input:not([type="radio"]):not([type="checkbox"]), textarea, select {
   display: block;
   width: 100%;
   padding: 10px;
@@ -44,6 +44,12 @@ input, textarea, select {
   appearance: none;
 }
 
+input[type="radio"], input[type="checkbox"] {
+  display: inline-block;
+  width: auto;
+  margin-right: 6px;
+  margin-bottom: 0;
+}
 button {
   background-color: #1565c0;
   color: white;
