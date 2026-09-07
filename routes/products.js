@@ -38,22 +38,24 @@ function adminOnly(req, res, next) {
 
 module.exports = (Product) => {
 
-  // ---------- GET all products (public — anyone can browse) ----------
-  router.get('/', async (req, res) => {
+// ---------- GET all products, scoped to the logged-in user's shop ----------
+  router.get('/', auth, async (req, res) => {
     try {
-      const products = await Product.find();
+      const products = await Product.find({ shopId: req.user.shopId });
       res.json(products);
     } catch (err) {
       res.status(500).json({ message: 'Server error', error: err.message });
     }
   });
 
-  // ---------- POST create product (admin only) ----------
-  router.post('/', auth, adminOnly, upload.single('image'), async (req, res) => {
+router.post('/', auth, adminOnly, upload.single('image'), async (req, res) => {
     try {
       const { name, price, stock, description, category } = req.body;
       const imageUrl = req.file ? `/uploads/${req.file.filename}` : '';
-      const product = new Product({ name, price, stock, description, imageUrl, category });
+      const product = new Product({
+        shopId: req.user.shopId,
+        name, price, stock, description, imageUrl, category
+      });
       await product.save();
       res.status(201).json(product);
     } catch (err) {
@@ -61,10 +63,14 @@ module.exports = (Product) => {
     }
   });
 
-  // ---------- PATCH update product (admin only) ----------
+// ---------- PATCH update product (admin only, own shop only) ----------
   router.patch('/:id', auth, adminOnly, async (req, res) => {
     try {
-      const product = await Product.findByIdAndUpdate(req.params.id, req.body, { new: true });
+      const product = await Product.findOneAndUpdate(
+        { _id: req.params.id, shopId: req.user.shopId },
+        req.body,
+        { new: true }
+      );
       if (!product) return res.status(404).json({ message: 'Product not found' });
       res.json(product);
     } catch (err) {
@@ -72,10 +78,10 @@ module.exports = (Product) => {
     }
   });
 
-  // ---------- DELETE product (admin only) ----------
+// ---------- DELETE product (admin only, own shop only) ----------
   router.delete('/:id', auth, adminOnly, async (req, res) => {
     try {
-      const product = await Product.findByIdAndDelete(req.params.id);
+      const product = await Product.findOneAndDelete({ _id: req.params.id, shopId: req.user.shopId });
       if (!product) return res.status(404).json({ message: 'Product not found' });
       res.json({ message: 'Product deleted' });
     } catch (err) {

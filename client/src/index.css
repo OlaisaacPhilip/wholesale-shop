@@ -29,7 +29,7 @@ h3, h4 {
   margin: 4px 0;
 }
 
-input, textarea {
+input, textarea, select {
   display: block;
   width: 100%;
   padding: 10px;
@@ -37,6 +37,11 @@ input, textarea {
   border: 1px solid #ccc;
   border-radius: 6px;
   font-size: 14px;
+  font-family: inherit;
+  background-color: #fff;
+  color: #222;
+  -webkit-appearance: none;
+  appearance: none;
 }
 
 button {

@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 
 export default function Dashboard() {
   const [stats, setStats] = useState(null);
+  const [finance, setFinance] = useState(null);
   const [range, setRange] = useState('day');
   const [error, setError] = useState('');
   const { user, logout } = useAuth();
@@ -12,6 +13,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     loadStats();
+    if (user?.role === 'admin') loadFinanceSummary();
   }, [range]);
 
   async function loadStats() {
@@ -23,13 +25,25 @@ export default function Dashboard() {
     }
   }
 
+  async function loadFinanceSummary() {
+    try {
+      const res = await api.get('/finance/summary');
+      setFinance(res.data);
+    } catch (err) {
+      setError('Failed to load financial summary');
+    }
+  }
+
   return (
     <div>
       <div className="page-header">
         <h2>Dashboard</h2>
         <div>
           {user?.role === 'admin' && (
-            <button onClick={() => navigate('/products')}>Manage Products</button>
+            <>
+              <button onClick={() => navigate('/products')}>Manage Products</button>
+              <button onClick={() => navigate('/manage-team')}>Manage Team</button>
+            </>
           )}
           {user?.role === 'delivery' && (
             <>
@@ -71,6 +85,16 @@ export default function Dashboard() {
       ) : (
         <p>Loading stats...</p>
       )}
+
+      {user?.role === 'admin' && finance && (
+        <div className="card">
+          <h3>Business Valuation</h3>
+          <p><strong>Stock Worth:</strong> ₦{finance.stockWorth.toLocaleString()}</p>
+          <p><strong>Delivered Revenue:</strong> ₦{finance.deliveredRevenue.toLocaleString()}</p>
+          <p><strong>Pending Value:</strong> ₦{finance.pendingValue.toLocaleString()}</p>
+          <p><strong>Total Business Value:</strong> ₦{finance.totalBusinessValue.toLocaleString()}</p>
+        </div>
+      )}
     </div>
   );
-}
+}   

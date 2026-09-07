@@ -23,6 +23,7 @@ module.exports = (Order, Product) => {
   router.post('/', auth, async (req, res) => {
     try {
       const { items, deliveryAddress, contactPhone, paymentMethod } = req.body;
+      const shopId = req.user.shopId;
 
       if (!paymentMethod || !['cash', 'card'].includes(paymentMethod)) {
         return res.status(400).json({ message: 'Invalid payment method' });
@@ -37,8 +38,9 @@ module.exports = (Order, Product) => {
       const orderItems = [];
 
       // Look up each product to snapshot its current name/price
+      // Look up each product to snapshot its current name/price
       for (const item of items) {
-        const product = await Product.findById(item.productId);
+        const product = await Product.findOne({ _id: item.productId, shopId });
         if (!product) {
           return res.status(404).json({ message: `Product not found: ${item.productId}` });
         }
@@ -69,6 +71,7 @@ module.exports = (Order, Product) => {
       }
 
       const order = new Order({
+        shopId,
         buyerId: req.user.id,
         items: orderItems,
         deliveryAddress,
@@ -91,7 +94,7 @@ module.exports = (Order, Product) => {
   // ---------- GET my orders (customer view) ----------
   router.get('/my-orders', auth, async (req, res) => {
     try {
-      const orders = await Order.find({ buyerId: req.user.id }).sort({ createdAt: -1 });
+      const orders = await Order.find({ buyerId: req.user.id, shopId: req.user.shopId }).sort({ createdAt: -1 });
       res.json(orders);
     } catch (err) {
       res.status(500).json({ message: 'Server error', error: err.message });

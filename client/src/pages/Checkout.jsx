@@ -61,8 +61,10 @@ export default function Checkout() {
           type="tel"
           value={contactPhone}
           onChange={(e) => setContactPhone(e.target.value)}
+          pattern="[0-9]{11}"
+          maxLength="11"
           required
-          placeholder="Phone number to reach you for this delivery"
+          placeholder="Contact to reach you for this delivery(11 digits)"
         />
 
         <h3>Payment Method</h3>

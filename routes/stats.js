@@ -50,16 +50,16 @@ module.exports = (Order) => {
 
       if (req.user.role === 'delivery') {
         const deliveryUserId = new mongoose.Types.ObjectId(req.user.id);
-        const deliveryMatch = { claimedBy: deliveryUserId, deliveredAt: { $gte: rangeStart } };
+        const deliveryMatch = { shopId: req.user.shopId, claimedBy: deliveryUserId, deliveredAt: { $gte: rangeStart } };
 
         delivered = await Order.countDocuments({ ...deliveryMatch, status: 'delivered' });
 
-        // "Orders In" for a delivery person means orders they claimed in this range
-        ordersIn = await Order.countDocuments({ claimedBy: deliveryUserId, claimedAt: { $gte: rangeStart } });
+// "Orders In" for a delivery person means orders they claimed in this range
+        ordersIn = await Order.countDocuments({ shopId: req.user.shopId, claimedBy: deliveryUserId, claimedAt: { $gte: rangeStart } });
 
         // "Pending" is a live snapshot — how many orders they currently hold
         // that are claimed but not yet delivered, independent of the date filter
-        pending = await Order.countDocuments({ claimedBy: deliveryUserId, status: 'claimed' });
+        pending = await Order.countDocuments({ shopId: req.user.shopId, claimedBy: deliveryUserId, status: 'claimed' });
 
         const revenueResult = await Order.aggregate([
           { $match: { ...deliveryMatch, status: 'delivered' } },
@@ -68,9 +68,9 @@ module.exports = (Order) => {
         totalRevenue = revenueResult[0]?.total || 0;
 
 } else {
-        // Admin: store-wide activity, scoped by when orders were placed
-        const matchStage = { createdAt: { $gte: rangeStart } };
-
+        // Admin: shop-wide activity (their own shop only), scoped by when orders were placed
+        const matchStage = { shopId: req.user.shopId, createdAt: { $gte: rangeStart } };
+        
         ordersIn = await Order.countDocuments(matchStage);
         delivered = await Order.countDocuments({ ...matchStage, status: 'delivered' });
         pending = ordersIn - delivered; // safe here — both scoped by the same createdAt field

@@ -21,7 +21,9 @@ export default function Login() {
       login(res.data.user, res.data.token);
 
       // redirect based on role
-      if (res.data.user.role === 'admin' || res.data.user.role === 'delivery') {
+      if (res.data.user.role === 'superadmin') {
+        navigate('/pending-shops');
+      } else if (res.data.user.role === 'admin' || res.data.user.role === 'delivery') {
         navigate('/dashboard');
       } else {
         navigate('/products');
@@ -41,6 +43,7 @@ export default function Login() {
         <button type="submit">Login</button>
       </form>
       <p>No account? <Link to="/signup">Sign up</Link></p>
+        <p>Want to Open your eShop? <Link to="/shop-apply">Apply here</Link></p>
     </div>
   );
 }

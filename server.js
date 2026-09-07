@@ -27,8 +27,13 @@ const userSchema = new mongoose.Schema({
   password: { type: String, required: true },
   role: {
     type: String,
-    enum: ['customer', 'delivery', 'admin'],
+    enum: ['customer', 'delivery', 'admin', 'superadmin'],
     default: 'customer'
+  },
+  shopId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Shop',
+    default: null // null only for superadmin, who isn't tied to one shop
   },
   isVerified: { type: Boolean, default: false },
   verificationToken: { type: String }
@@ -36,8 +41,32 @@ const userSchema = new mongoose.Schema({
 
 const User = mongoose.model('User', userSchema);
 
+// ---------- SHOP MODEL ----------
+const shopSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  ownerName: { type: String, required: true },
+  ownerEmail: { type: String, required: true },
+  ownerPhone: { type: String, required: true },
+  pendingPassword: { type: String }, // hashed password, used to create the admin User once approved
+  status: {
+    type: String,
+    enum: ['pending', 'active', 'rejected', 'held'],
+    default: 'pending'
+  },
+  subscriptionStatus: {
+    type: String,
+    enum: ['trial', 'paid', 'expired'],
+    default: 'trial'
+  },
+  trialEndsAt: { type: Date },
+  rejectionReason: { type: String, default: '' }
+}, { timestamps: true });
+
+const Shop = mongoose.model('Shop', shopSchema);
+
 // ---------- PRODUCT MODEL ----------
 const productSchema = new mongoose.Schema({
+  shopId: { type: mongoose.Schema.Types.ObjectId, ref: 'Shop', required: true },
   name: { type: String, required: true },
   price: { type: Number, required: true },
   stock: { type: Number, required: true, default: 0 },
@@ -50,6 +79,7 @@ const Product = mongoose.model('Product', productSchema);
 
 // ---------- ORDER MODEL ----------
 const orderSchema = new mongoose.Schema({
+  shopId: { type: mongoose.Schema.Types.ObjectId, ref: 'Shop', required: true },
   buyerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   items: [
     {
@@ -85,8 +115,11 @@ const orderSchema = new mongoose.Schema({
 const Order = mongoose.model('Order', orderSchema);
 
 // ---------- Routes ----------
-const authRoutes = require('./routes/auth')(User);
+const authRoutes = require('./routes/auth')(User, Shop);
 app.use('/api/auth', authRoutes);
+
+const shopRoutes = require('./routes/shops')(Shop, User);
+app.use('/api/shops', shopRoutes);
 
 const productRoutes = require('./routes/products')(Product);
 app.use('/api/products', productRoutes);
@@ -103,6 +136,14 @@ app.use('/api/delivery', deliveryRoutes);
 const statsRoutes = require('./routes/stats')(Order);
 app.use('/api/stats', statsRoutes);
 
+const financeRoutes = require('./routes/finance')(Product, Order);
+app.use('/api/finance', financeRoutes);
+
+//shop owner to promote user to rider
+const userRoutes = require('./routes/users')(User);
+app.use('/api/users', userRoutes);
+
+
 // ---------- Test route ----------
 app.get('/', (req, res) => {
   res.send('Wholesale Shop API is running');
@@ -112,4 +153,4 @@ app.get('/', (req, res) => {
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
-module.exports = { app, User, Product, Order };
+module.exports = { app, User, Product, Order, Shop };

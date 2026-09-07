@@ -23,10 +23,14 @@ function deliveryOnly(req, res, next) {
 
 module.exports = (Order) => {
 
-  // ---------- GET available orders (paid, unclaimed) ----------
+  // ---------- GET available orders (paid, unclaimed, same shop only) ----------
   router.get('/available', auth, deliveryOnly, async (req, res) => {
     try {
-      const orders = await Order.find({ status: 'available', claimedBy: null }).sort({ createdAt: 1 });
+      const orders = await Order.find({
+        shopId: req.user.shopId,
+        status: 'available',
+        claimedBy: null
+      }).sort({ createdAt: 1 });
       res.json(orders);
     } catch (err) {
       res.status(500).json({ message: 'Server error', error: err.message });
@@ -36,7 +40,7 @@ module.exports = (Order) => {
   // ---------- GET my claimed orders (delivery person's own list) ----------
   router.get('/my-deliveries', auth, deliveryOnly, async (req, res) => {
     try {
-      const orders = await Order.find({ claimedBy: req.user.id }).sort({ createdAt: -1 });
+      const orders = await Order.find({ claimedBy: req.user.id, shopId: req.user.shopId }).sort({ createdAt: -1 });
       res.json(orders);
     } catch (err) {
       res.status(500).json({ message: 'Server error', error: err.message });
@@ -53,7 +57,7 @@ module.exports = (Order) => {
       // MongoDB guarantees this, since the check-and-set happens in one step
       // at the database level, not in two separate steps in our code.
       const order = await Order.findOneAndUpdate(
-        { _id: req.params.id, status: 'available', claimedBy: null },
+        { _id: req.params.id, shopId: req.user.shopId, status: 'available', claimedBy: null },
         { claimedBy: req.user.id, claimedAt: new Date(), status: 'claimed' },
         { new: true }
       );
@@ -72,7 +76,7 @@ module.exports = (Order) => {
   router.patch('/:id/deliver', auth, deliveryOnly, async (req, res) => {
     try {
       const order = await Order.findOneAndUpdate(
-        { _id: req.params.id, claimedBy: req.user.id, status: 'claimed' },
+        { _id: req.params.id, shopId: req.user.shopId, claimedBy: req.user.id, status: 'claimed' },
         { status: 'delivered', deliveredAt: new Date(), paymentStatus: 'paid' },
         { new: true }
       );
