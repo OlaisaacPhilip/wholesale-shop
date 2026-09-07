@@ -47,6 +47,7 @@ export default function MyDeliveries() {
           <p>Delivery Address: {order.deliveryAddress}</p>
           <p>Contact Phone: {order.contactPhone}</p>
           <p>Payment: {order.paymentMethod === 'cash' ? 'Cash on Delivery' : 'Card (Paid)'}</p>
+          <p><strong>Amount to Collect: ₦{order.totalAmount}</strong></p>
           <p>Status: <strong>{order.status}</strong></p>
           <ul>
             {order.items.map((item, idx) => (
