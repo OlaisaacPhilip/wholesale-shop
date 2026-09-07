@@ -45,7 +45,10 @@ export default function PendingShops() {
     <div>
       <div className="page-header">
         <h2>Pending Shop Applications</h2>
-        <button onClick={() => { logout(); navigate('/login'); }}>Logout</button>
+        <div>
+          <button onClick={() => navigate('/all-shops')}>All Shops</button>
+          <button onClick={() => { logout(); navigate('/login'); }}>Logout</button>
+        </div>
       </div>
 
       {error && <p style={{ color: 'red' }}>{error}</p>}
