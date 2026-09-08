@@ -46,7 +46,7 @@ function adminOnly(req, res, next) {
   next();
 }
 
-module.exports = (Product) => {
+module.exports = (Product, Shop) => {
 
 // ---------- GET all products, scoped to the logged-in user's shop ----------
   router.get('/', auth, async (req, res) => {
@@ -73,13 +73,15 @@ router.post('/', auth, adminOnly, upload.single('image'), async (req, res) => {
         }
       }
 
-      // Enforce free-tier image size limit (1MB)
-      if (shop.plan === 'free' && req.file && req.file.size > 1 * 1024 * 1024) {
+// Enforce image size limits: Free tier 1MB, Premium 5MB
+      const maxSizeBytes = shop.plan === 'free' ? 1 * 1024 * 1024 : 5 * 1024 * 1024;
+      if (req.file && req.file.size > maxSizeBytes) {
         await cloudinary.uploader.destroy(req.file.filename);
+        const maxLabel = shop.plan === 'free' ? '1MB' : '5MB';
         return res.status(400).json({
-          message: 'Free plan images must be under 1MB. Try a smaller/compressed image, or upgrade to Premium for larger uploads.'
+          message: `Image must be under ${maxLabel}. Try a smaller or compressed image.`
         });
-      }
+      } 
 
       const { name, price, stock, description, category } = req.body;
       const imageUrl = req.file ? req.file.path : '';

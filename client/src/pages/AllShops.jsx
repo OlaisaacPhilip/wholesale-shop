@@ -46,6 +46,26 @@ export default function AllShops() {
     }
   }
 
+  async function handleDemote(shopId) {
+    if (!confirm('Demote this shop from Premium to Free? They will lose unlimited products and larger image uploads.')) return;
+    try {
+      await api.patch(`/shops/${shopId}/demote-to-free`);
+      loadShops();
+    } catch (err) {
+      setError('Failed to demote shop');
+    }
+  }
+
+  async function handlePromote(shopId) {
+    if (!confirm('Promote this shop from Free to Premium?')) return;
+    try {
+      await api.patch(`/shops/${shopId}/promote-to-premium`);
+      loadShops();
+    } catch (err) {
+      setError('Failed to promote shop');
+    }
+  }
+
   return (
     <div>
       <div className="page-header">
@@ -66,10 +86,22 @@ export default function AllShops() {
             <p>Owner: {shop.ownerName} - {shop.ownerEmail}</p>
             <p>Status: <strong>{shop.status}</strong></p>
             <p>Subscription: {shop.subscriptionStatus}</p>
+            <p>Plan: <strong>{shop.plan === 'premium' ? 'Premium' : 'Free'}</strong></p>
             {shop.subscriptionStatus === 'trial' && shop.status === 'active' && (
               <p style={{ color: days <= 7 ? '#c62828' : 'inherit' }}>
-                {days >= 0 ? `Trial ends in ${days} day(s)` : 'Trial expired'}
+                {shop.plan === 'premium'
+                  ? (days >= 0 ? `Premium trial — payment due in ${days} day(s)` : 'Premium trial expired — payment overdue')
+                  : (days >= 0 ? `Free trial: ${days} day(s) shown for reference` : 'Free trial period ended (no action needed)')}
               </p>
+            )}
+            {shop.plan === 'premium' ? (
+              <button onClick={() => handleDemote(shop._id)} style={{ backgroundColor: '#e65100' }}>
+                Demote to Free
+              </button>
+            ) : (
+              <button onClick={() => handlePromote(shop._id)} style={{ backgroundColor: '#1565c0' }}>
+                Promote to Premium
+              </button>
             )}
             {shop.status === 'held' ? (
               <button onClick={() => handleUnhold(shop._id)}>Unhold</button>

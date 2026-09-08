@@ -10,6 +10,7 @@ app.use(cors({
     'https://wholesale-shop-nu.vercel.app'
   ]
 }));
+app.use(express.json());
 
 // ---------- Connect to MongoDB Atlas ----------
 mongoose.connect(process.env.MONGO_URI)

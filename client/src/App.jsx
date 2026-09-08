@@ -12,6 +12,7 @@ import Dashboard from './pages/Dashboard';
 import PendingShops from './pages/PendingShops';
 import ManageTeam from './pages/ManageTeam';
 import AllShops from './pages/AllShops';
+import Help from './pages/Help';
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
       <Route path="/signup" element={<Signup />} />
       <Route path="/shop-apply" element={<ShopApply />} />
       <Route path="/login" element={<Login />} />
+      <Route path="/help" element={<Help />} />
       <Route path="/products" element={<ProductList />} />
       <Route path="/cart" element={<Cart />} />
       <Route path="/checkout" element={<Checkout />} />

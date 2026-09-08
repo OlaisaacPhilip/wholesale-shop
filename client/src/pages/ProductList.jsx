@@ -110,6 +110,9 @@ export default function ProductList() {
           <input name="stock" type="number" placeholder="Stock" value={form.stock} onChange={handleChange} required />
           <input name="description" placeholder="Description" value={form.description} onChange={handleChange} />
           <input type="file" accept="image/*" onChange={(e) => setImageFile(e.target.files[0])} />
+          <p style={{ fontSize: '13px', color: '#666', marginTop: '-8px', marginBottom: '10px' }}>
+            Please upload a clean photo of your product only. Do not upload images with extra writing, logos, or branding that isn't your own shop's name — this can lead to copyright issues.
+          </p>
           <input name="category" placeholder="Category (e.g. Beverages)" value={form.category} onChange={handleChange} required />
           <button type="submit">Add</button>
         </form>

@@ -44,6 +44,7 @@ export default function Login() {
       </form>
       <p>No account? <Link to="/signup">Sign up</Link></p>
         <p>Want to Open your eShop? <Link to="/shop-apply">Apply here</Link></p>
+      <p><Link to="/help">Need help using the app?</Link></p>
     </div>
   );
 }

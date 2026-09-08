@@ -27,7 +27,7 @@ module.exports = (Shop, User) => {
   // ---------- POST apply as a new shop (public, no login needed yet) ----------
   router.post('/apply', async (req, res) => {
     try {
-      const { name, ownerName, ownerEmail, ownerPhone, password } = req.body;
+      const { name, ownerName, ownerEmail, ownerPhone, password, plan } = req.body;
 
       const existingShopName = await Shop.findOne({
         name: { $regex: `^${name}$`, $options: 'i' },
@@ -50,7 +50,8 @@ module.exports = (Shop, User) => {
         ownerEmail,
         ownerPhone,
         pendingPassword: hashedPassword,
-        status: 'pending'
+        status: 'pending',
+        plan: plan === 'premium' ? 'premium' : 'free'
       });
 
       await shop.save();
@@ -117,7 +118,14 @@ module.exports = (Shop, User) => {
       shop.status = 'active';
       shop.pendingPassword = undefined;
       shop.subscriptionStatus = 'trial';
-      shop.trialEndsAt = new Date(Date.now() + 90 * 24 * 60 * 60 * 1000); // 90 days from now
+
+      // Free tier gets a generous 90-day trial (matches indefinite free usage anyway).
+      // Premium gets a short 7-day trial, since they've already chosen to want more
+      // than Free offers — just enough time to confirm the app fits their shop
+      // before their first payment is due.
+      const trialDays = shop.plan === 'premium' ? 7 : 90;
+      shop.trialEndsAt = new Date(Date.now() + trialDays * 24 * 60 * 60 * 1000);
+
       await shop.save();
 
       res.json({ message: 'Shop approved and admin account created', shop });
@@ -157,12 +165,42 @@ module.exports = (Shop, User) => {
     }
   });
 
-  // ---------- PATCH unhold a shop (superadmin only) ----------
+// ---------- PATCH unhold a shop (superadmin only) ----------
   router.patch('/:id/unhold', auth, superadminOnly, async (req, res) => {
     try {
       const shop = await Shop.findByIdAndUpdate(
         req.params.id,
         { status: 'active' },
+        { new: true }
+      );
+      if (!shop) return res.status(404).json({ message: 'Shop not found' });
+      res.json(shop);
+    } catch (err) {
+      res.status(500).json({ message: 'Server error', error: err.message });
+    }
+  });
+
+// ---------- PATCH demote a premium shop to free (superadmin only, e.g. non-renewal) ----------
+  router.patch('/:id/demote-to-free', auth, superadminOnly, async (req, res) => {
+    try {
+      const shop = await Shop.findByIdAndUpdate(
+        req.params.id,
+        { plan: 'free', subscriptionStatus: 'expired' },
+        { new: true }
+      );
+      if (!shop) return res.status(404).json({ message: 'Shop not found' });
+      res.json(shop);
+    } catch (err) {
+      res.status(500).json({ message: 'Server error', error: err.message });
+    }
+  });
+
+  // ---------- PATCH promote a free shop to premium (superadmin only, e.g. after payment received) ----------
+  router.patch('/:id/promote-to-premium', auth, superadminOnly, async (req, res) => {
+    try {
+      const shop = await Shop.findByIdAndUpdate(
+        req.params.id,
+        { plan: 'premium', subscriptionStatus: 'paid' },
         { new: true }
       );
       if (!shop) return res.status(404).json({ message: 'Shop not found' });

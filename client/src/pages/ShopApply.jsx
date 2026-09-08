@@ -4,7 +4,7 @@ import api from '../api';
 
 export default function ShopApply() {
   const [form, setForm] = useState({
-    name: '', ownerName: '', ownerEmail: '', ownerPhone: '', password: ''
+    name: '', ownerName: '', ownerEmail: '', ownerPhone: '', password: '', plan: 'free'
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -60,6 +60,21 @@ export default function ShopApply() {
         <input name="ownerEmail" type="email" placeholder="Your Email" value={form.ownerEmail} onChange={handleChange} required />
         <input name="ownerPhone" placeholder="Your Phone Number" value={form.ownerPhone} onChange={handleChange} required />
         <input name="password" type="password" placeholder="Choose a Password" value={form.password} onChange={handleChange} required />
+
+        <h3>Choose a Plan</h3>
+        <div>
+          <label>
+            <input type="radio" name="plan" value="free" checked={form.plan === 'free'} onChange={handleChange} />
+            Free — up to 100 products, 1MB image uploads
+          </label>
+        </div>
+        <div>
+          <label>
+            <input type="radio" name="plan" value="premium" checked={form.plan === 'premium'} onChange={handleChange} />
+            Premium — unlimited products, larger image uploads (₦5000/month)
+          </label>
+        </div>
+
         <button type="submit" disabled={loading}>
           {loading ? 'Submitting...' : 'Submit Application'}
         </button>
