@@ -21,7 +21,7 @@ export default function Cart() {
       {items.map((item) => (
         <div key={item.productId} className="card cart-item">
           {item.imageUrl && (
-            <img src={`https://wholesale-shop-0pi1.onrender.com${item.imageUrl}`} alt={item.name} className="cart-thumb" />
+            <img src={p.imageUrl} alt={item.name} className="cart-thumb" />
           )}
           <div className="cart-details">
             <h4>{item.name}</h4>

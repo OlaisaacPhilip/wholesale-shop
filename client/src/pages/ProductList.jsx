@@ -121,7 +121,7 @@ export default function ProductList() {
           .filter((p) => p.name.toLowerCase().includes(searchTerm.toLowerCase()))
           .map((p) => (
           <div key={p._id} className="card">
-            {p.imageUrl && <img src={`https://wholesale-shop-0pi1.onrender.com${p.imageUrl}`} alt={p.name} style={{ maxWidth: '150px' }} />}
+            {p.imageUrl && <img src={p.imageUrl} alt={p.name} style={{ maxWidth: '150px' }} />}
             <h4>{p.name}</h4>
             <p>₦{p.price} — Stock: {p.stock}</p>
             <ExpandableText text={p.description} />

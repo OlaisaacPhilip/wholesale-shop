@@ -1,14 +1,24 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const multer = require('multer');
+const cloudinary = require('cloudinary').v2;
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const router = express.Router();
 
-// Configure where + how uploaded files get saved
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, 'uploads/'),
-  filename: (req, file, cb) => {
-    const uniqueName = Date.now() + '-' + file.originalname;
-    cb(null, uniqueName);
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
+
+const storage = new CloudinaryStorage({
+  cloudinary,
+  params: {
+    folder: 'wholesale-shop-products',
+    allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
+    transformation: [
+      { quality: 'auto', fetch_format: 'auto', width: 1200, crop: 'limit' }
+    ]
   }
 });
 const upload = multer({ storage });
@@ -50,8 +60,29 @@ module.exports = (Product) => {
 
 router.post('/', auth, adminOnly, upload.single('image'), async (req, res) => {
     try {
+      const shop = await Shop.findById(req.user.shopId);
+
+// Enforce free-tier product count limit
+      if (shop.plan === 'free') {
+        const currentCount = await Product.countDocuments({ shopId: req.user.shopId });
+        if (currentCount >= shop.maxProducts) {
+          if (req.file) await cloudinary.uploader.destroy(req.file.filename);
+          return res.status(403).json({
+            message: `You've reached the free plan limit of ${shop.maxProducts} products. Upgrade to Premium for unlimited listings.`
+          });
+        }
+      }
+
+      // Enforce free-tier image size limit (1MB)
+      if (shop.plan === 'free' && req.file && req.file.size > 1 * 1024 * 1024) {
+        await cloudinary.uploader.destroy(req.file.filename);
+        return res.status(400).json({
+          message: 'Free plan images must be under 1MB. Try a smaller/compressed image, or upgrade to Premium for larger uploads.'
+        });
+      }
+
       const { name, price, stock, description, category } = req.body;
-      const imageUrl = req.file ? `/uploads/${req.file.filename}` : '';
+      const imageUrl = req.file ? req.file.path : '';
       const product = new Product({
         shopId: req.user.shopId,
         name, price, stock, description, imageUrl, category

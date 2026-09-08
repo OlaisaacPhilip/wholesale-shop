@@ -11,9 +11,6 @@ app.use(cors({
   ]
 }));
 
-app.use(express.json());
-app.use('/uploads', express.static('uploads')); // makes uploaded images publicly viewable
-
 // ---------- Connect to MongoDB Atlas ----------
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('MongoDB connected'))
@@ -59,6 +56,12 @@ const shopSchema = new mongoose.Schema({
     default: 'trial'
   },
   trialEndsAt: { type: Date },
+  plan: {
+    type: String,
+    enum: ['free', 'premium'],
+    default: 'free'
+  },
+  maxProducts: { type: Number, default: 100 },
   rejectionReason: { type: String, default: '' }
 }, { timestamps: true });
 
@@ -121,7 +124,7 @@ app.use('/api/auth', authRoutes);
 const shopRoutes = require('./routes/shops')(Shop, User);
 app.use('/api/shops', shopRoutes);
 
-const productRoutes = require('./routes/products')(Product);
+const productRoutes = require('./routes/products')(Product, Shop);
 app.use('/api/products', productRoutes);
 
 const orderRoutes = require('./routes/orders')(Order, Product);

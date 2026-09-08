@@ -8,8 +8,8 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       manifest: {
-        name: 'Wholesale Shop',
-        short_name: 'WholesaleShop',
+        name: 'Meloshop',
+        short_name: 'Meloshop',
         description: 'Order and deliver wholesale products',
         theme_color: '#1a1a1a',
         background_color: '#ffffff',
