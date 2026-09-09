@@ -1,7 +1,17 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
+const crypto = require('crypto');
+const nodemailer = require('nodemailer');
 const router = express.Router();
+
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.GMAIL_USER,
+    pass: process.env.GMAIL_APP_PASSWORD
+  }
+});
 
 function auth(req, res, next) {
   const authHeader = req.headers.authorization;
@@ -44,6 +54,9 @@ module.exports = (Shop, User) => {
 
       const hashedPassword = await bcrypt.hash(password, 10);
 
+      const rawToken = crypto.randomBytes(32).toString('hex');
+      const hashedToken = crypto.createHash('sha256').update(rawToken).digest('hex');
+
       const shop = new Shop({
         name,
         ownerName,
@@ -51,11 +64,43 @@ module.exports = (Shop, User) => {
         ownerPhone,
         pendingPassword: hashedPassword,
         status: 'pending',
-        plan: plan === 'premium' ? 'premium' : 'free'
+        plan: plan === 'premium' ? 'premium' : 'free',
+        verificationToken: hashedToken
       });
 
       await shop.save();
+
+      const verifyUrl = `${process.env.FRONTEND_URL}/verify-shop/${rawToken}`;
+      await transporter.sendMail({
+        from: process.env.GMAIL_USER,
+        to: ownerEmail,
+        subject: 'Verify your email — Shop Application',
+        html: `<p>Thanks for applying! Please verify your email to confirm your shop application.</p>
+               <p><a href="${verifyUrl}">Click here to verify your email</a></p>
+               <p>This link expires in 24 hours.</p>`
+      });
+
       res.status(201).json({ message: 'Application submitted', shopId: shop._id, status: shop.status });
+    } catch (err) {
+      res.status(500).json({ message: 'Server error', error: err.message });
+    }
+  });
+
+  // ---------- VERIFY SHOP APPLICANT EMAIL — no login, just confirms and shows pending status ----------
+  router.post('/verify-email/:token', async (req, res) => {
+    try {
+      const hashedToken = crypto.createHash('sha256').update(req.params.token).digest('hex');
+      const shop = await Shop.findOne({ verificationToken: hashedToken });
+
+      if (!shop) {
+        return res.status(400).json({ message: 'Invalid or expired verification link' });
+      }
+
+      shop.emailVerified = true;
+      shop.verificationToken = undefined;
+      await shop.save();
+
+      res.json({ message: 'Email verified', shopName: shop.name, status: shop.status });
     } catch (err) {
       res.status(500).json({ message: 'Server error', error: err.message });
     }
@@ -100,6 +145,12 @@ module.exports = (Shop, User) => {
         return res.status(400).json({ message: 'Shop is not pending approval' });
       }
 
+      if (!shop.emailVerified) {
+        return res.status(400).json({
+          message: 'Cannot approve this shop — the owner has not verified their email yet.'
+        });
+      }
+
       const existingUser = await User.findOne({ email: shop.ownerEmail });
       if (existingUser) {
         return res.status(400).json({ message: 'A user with this email already exists' });
@@ -111,8 +162,10 @@ module.exports = (Shop, User) => {
         phone: shop.ownerPhone,
         password: shop.pendingPassword,
         role: 'admin',
-        shopId: shop._id
+        shopId: shop._id,
+        isVerified: shop.emailVerified
       });
+
       await adminUser.save();
 
       shop.status = 'active';

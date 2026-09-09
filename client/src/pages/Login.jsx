@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 
 export default function Login() {
   const [form, setForm] = useState({ email: '', password: '' });
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
   const { login } = useAuth();
@@ -39,7 +40,30 @@ export default function Login() {
       {error && <p style={{ color: 'red' }}>{error}</p>}
       <form onSubmit={handleSubmit}>
         <input name="email" type="email" placeholder="Email" onChange={handleChange} required />
-        <input name="password" type="password" placeholder="Password" onChange={handleChange} required />
+        <div style={{ position: 'relative' }}>
+          <input
+            name="password"
+            type={showPassword ? 'text' : 'password'}
+            placeholder="Password"
+            onChange={handleChange}
+            required
+            style={{ paddingRight: '45px' }}
+          />
+          <span
+            onClick={() => setShowPassword(!showPassword)}
+            style={{
+              position: 'absolute',
+              right: '12px',
+              top: '10px',
+              cursor: 'pointer',
+              fontSize: '13px',
+              color: '#1565c0'
+            }}
+          >
+            {showPassword ? 'Hide' : 'Show'}
+          </span>
+        </div>
+        <p><Link to="/forgot-password">Forgot password?</Link></p>
         <button type="submit">Login</button>
       </form>
       <p>No account? <Link to="/signup">Sign up</Link></p>

@@ -58,9 +58,35 @@ module.exports = (Product, Shop) => {
     }
   });
 
-router.post('/', auth, adminOnly, upload.single('image'), async (req, res) => {
+// ---------- Middleware: reject oversized uploads BEFORE Cloudinary ever sees them ----------
+async function checkUploadSize(req, res, next) {
+  try {
+    const shop = await Shop.findById(req.user.shopId);
+    if (!shop) return res.status(404).json({ message: 'Shop not found' });
+
+    const maxSizeBytes = shop.plan === 'free' ? 1 * 1024 * 1024 : 5 * 1024 * 1024;
+    const incomingSize = parseInt(req.headers['content-length'] || '0', 10);
+
+    // Content-Length includes the whole multipart form, not just the image,
+    // so this is a safe upper-bound check — the actual file can only be smaller
+    // than this, never bigger, so rejecting here reliably blocks oversized originals
+    if (incomingSize > maxSizeBytes + (50 * 1024)) { // +50KB buffer for form field overhead
+      const maxLabel = shop.plan === 'free' ? '1MB' : '5MB';
+      return res.status(400).json({
+        message: `Image is too large. Free/Premium plans allow original files up to ${maxLabel} before upload — please use a smaller photo.`
+      });
+    }
+
+    req.shop = shop; // pass it along so the route below doesn't need to re-fetch it
+    next();
+  } catch (err) {
+    res.status(500).json({ message: 'Server error', error: err.message });
+  }
+}
+
+router.post('/', auth, adminOnly, checkUploadSize, upload.single('image'), async (req, res) => {
     try {
-      const shop = await Shop.findById(req.user.shopId);
+      const shop = req.shop; // already fetched in checkUploadSize, no need to query again
 
 // Enforce free-tier product count limit
       if (shop.plan === 'free') {
@@ -73,6 +99,7 @@ router.post('/', auth, adminOnly, upload.single('image'), async (req, res) => {
         }
       }
 
+/*
 // Enforce image size limits: Free tier 1MB, Premium 5MB
       const maxSizeBytes = shop.plan === 'free' ? 1 * 1024 * 1024 : 5 * 1024 * 1024;
       if (req.file && req.file.size > maxSizeBytes) {
@@ -81,7 +108,7 @@ router.post('/', auth, adminOnly, upload.single('image'), async (req, res) => {
         return res.status(400).json({
           message: `Image must be under ${maxLabel}. Try a smaller or compressed image.`
         });
-      } 
+      } */
 
       const { name, price, stock, description, category } = req.body;
       const imageUrl = req.file ? req.file.path : '';

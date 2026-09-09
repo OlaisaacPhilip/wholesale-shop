@@ -6,6 +6,8 @@ export default function Signup() {
   const [form, setForm] = useState({ name: '', email: '', phone: '', password: '', shopId: '' });
   const [shops, setShops] = useState([]);
   const [error, setError] = useState('');
+  const [message, setMessage] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -20,9 +22,10 @@ export default function Signup() {
   async function handleSubmit(e) {
     e.preventDefault();
     setError('');
+    setMessage('');
     try {
-      await api.post('/auth/signup', form);
-      navigate('/login');
+      const res = await api.post('/auth/signup', form);
+      setMessage(res.data.message);
     } catch (err) {
       setError(err.response?.data?.message || 'Signup failed');
     }
@@ -32,6 +35,7 @@ export default function Signup() {
     <div>
       <h2>Sign Up</h2>
       {error && <p style={{ color: 'red' }}>{error}</p>}
+      {message && <p style={{ color: 'green' }}>{message}</p>}
       <form onSubmit={handleSubmit}>
         <input name="name" placeholder="Full Name" onChange={handleChange} required />
         <input name="email" type="email" placeholder="Email" onChange={handleChange} required />
@@ -52,7 +56,29 @@ export default function Signup() {
             <option key={shop._id} value={shop._id}>{shop.name}</option>
           ))}
         </select>
-        <input name="password" type="password" placeholder="Password" onChange={handleChange} required />
+        <div style={{ position: 'relative' }}>
+          <input
+            name="password"
+            type={showPassword ? 'text' : 'password'}
+            placeholder="Password"
+            onChange={handleChange}
+            required
+            style={{ paddingRight: '45px' }}
+          />
+          <span
+            onClick={() => setShowPassword(!showPassword)}
+            style={{
+              position: 'absolute',
+              right: '12px',
+              top: '10px',
+              cursor: 'pointer',
+              fontSize: '13px',
+              color: '#1565c0'
+            }}
+          >
+            {showPassword ? 'Hide' : 'Show'}
+          </span>
+        </div>
         <button type="submit">Sign Up</button>
       </form>
       <p>Already have an account? <Link to="/login">Login</Link></p>

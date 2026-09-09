@@ -23,6 +23,8 @@ const userSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
   phone: { type: String, required: true },
   password: { type: String, required: true },
+resetPasswordToken: { type: String },
+resetPasswordExpires: { type: Date },
   role: {
     type: String,
     enum: ['customer', 'delivery', 'admin', 'superadmin'],
@@ -63,7 +65,9 @@ const shopSchema = new mongoose.Schema({
     default: 'free'
   },
   maxProducts: { type: Number, default: 100 },
-  rejectionReason: { type: String, default: '' }
+  rejectionReason: { type: String, default: '' },
+  emailVerified: { type: Boolean, default: false },
+  verificationToken: { type: String }
 }, { timestamps: true });
 
 const Shop = mongoose.model('Shop', shopSchema);

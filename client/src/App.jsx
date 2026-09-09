@@ -13,6 +13,10 @@ import PendingShops from './pages/PendingShops';
 import ManageTeam from './pages/ManageTeam';
 import AllShops from './pages/AllShops';
 import Help from './pages/Help';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
+import VerifyEmail from './pages/VerifyEmail';
+import VerifyShopEmail from './pages/VerifyShopEmail';
 
 function App() {
   return (
@@ -33,6 +37,10 @@ function App() {
       <Route path="/pending-shops" element={<PendingShops />} />
       <Route path="/manage-team" element={<ManageTeam />} />
       <Route path="/all-shops" element={<AllShops />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+<Route path="/reset-password/:token" element={<ResetPassword />} />
+      <Route path="/verify-email/:token" element={<VerifyEmail />} />
+      <Route path="/verify-shop/:token" element={<VerifyShopEmail />} />
     </Routes>
   );
 }

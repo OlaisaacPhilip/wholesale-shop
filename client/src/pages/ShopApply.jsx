@@ -9,6 +9,7 @@ export default function ShopApply() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
   function handleChange(e) {
@@ -59,7 +60,30 @@ export default function ShopApply() {
         <input name="ownerName" placeholder="Your Full Name" value={form.ownerName} onChange={handleChange} required />
         <input name="ownerEmail" type="email" placeholder="Your Email" value={form.ownerEmail} onChange={handleChange} required />
         <input name="ownerPhone" placeholder="Your Phone Number" value={form.ownerPhone} onChange={handleChange} required />
-        <input name="password" type="password" placeholder="Choose a Password" value={form.password} onChange={handleChange} required />
+        <div style={{ position: 'relative' }}>
+          <input
+            name="password"
+            type={showPassword ? 'text' : 'password'}
+            placeholder="Choose a Password" value={form.password} onChange={handleChange} required
+            onChange={handleChange}
+            required
+            style={{ paddingRight: '45px' }}
+          />
+          <span
+            onClick={() => setShowPassword(!showPassword)}
+            style={{
+              position: 'absolute',
+              right: '12px',
+              top: '10px',
+              cursor: 'pointer',
+              fontSize: '13px',
+              color: '#1565c0'
+            }}
+          >
+            {showPassword ? 'Hide' : 'Show'}
+          </span>
+        </div>
+        <button type="submit">Sign Up</button>
 
         <h3>Choose a Plan</h3>
         <div>
