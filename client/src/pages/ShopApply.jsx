@@ -62,7 +62,6 @@ export default function ShopApply() {
         <input name="ownerPhone" placeholder="Your Phone Number" value={form.ownerPhone} onChange={handleChange} required />
         <div style={{ position: 'relative' }}>
           <input
-            <input
             name="password"
             type={showPassword ? 'text' : 'password'}
             placeholder="Choose a Password"
