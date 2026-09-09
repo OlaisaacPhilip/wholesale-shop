@@ -62,9 +62,11 @@ export default function ShopApply() {
         <input name="ownerPhone" placeholder="Your Phone Number" value={form.ownerPhone} onChange={handleChange} required />
         <div style={{ position: 'relative' }}>
           <input
+            <input
             name="password"
             type={showPassword ? 'text' : 'password'}
-            placeholder="Choose a Password" value={form.password} onChange={handleChange} required
+            placeholder="Choose a Password"
+            value={form.password}
             onChange={handleChange}
             required
             style={{ paddingRight: '45px' }}
@@ -83,7 +85,6 @@ export default function ShopApply() {
             {showPassword ? 'Hide' : 'Show'}
           </span>
         </div>
-        <button type="submit">Sign Up</button>
 
         <h3>Choose a Plan</h3>
         <div>
