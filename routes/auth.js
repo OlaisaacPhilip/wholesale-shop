@@ -193,6 +193,7 @@ console.log('forgot-password lookup:', email, user ? 'FOUND' : 'NOT FOUND');
 
     res.json({ message: 'If that email is registered, a reset link has been sent.' });
   } catch (err) {
+    console.error('forgot-password error:', err);
     res.status(500).json({ message: 'Server error', error: err.message });
   }
 });

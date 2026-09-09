@@ -82,6 +82,7 @@ module.exports = (Shop, User) => {
 
       res.status(201).json({ message: 'Application submitted', shopId: shop._id, status: shop.status });
     } catch (err) {
+      console.error('send mail error:', err);
       res.status(500).json({ message: 'Server error', error: err.message });
     }
   });
@@ -190,15 +191,28 @@ module.exports = (Shop, User) => {
   // ---------- PATCH reject a shop (superadmin only) ----------
   router.patch('/:id/reject', auth, superadminOnly, async (req, res) => {
     try {
-      const { reason } = req.body;
-      const shop = await Shop.findByIdAndUpdate(
-        req.params.id,
-        { status: 'rejected', rejectionReason: reason || '' },
-        { new: true }
-      );
+      const shop = await Shop.findById(req.params.id);
       if (!shop) return res.status(404).json({ message: 'Shop not found' });
-      res.json(shop);
+
+      // Notify the owner before wiping the record, since there'll be
+      // nothing left afterward to explain why (no shop doc, no login-time lookup)
+      const { reason } = req.body;
+      try {
+        await transporter.sendMail({
+          from: `"Meloshop" <${process.env.GMAIL_USER}>`,
+          to: shop.ownerEmail,
+          subject: 'Your Shop Application Was Not Approved',
+          html: `<p>Your application for "${shop.name}" was not approved${reason ? ': ' + reason : '.'}</p>
+                 <p>You're welcome to reapply at any time.</p>`
+        });
+      } catch (mailErr) {
+        console.error('reject-notification email error:', mailErr);
+      }
+
+      await Shop.findByIdAndDelete(req.params.id);
+      res.json({ message: 'Shop rejected and record deleted' });
     } catch (err) {
+      console.error('reject error:', err);
       res.status(500).json({ message: 'Server error', error: err.message });
     }
   });
