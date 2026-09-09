@@ -63,7 +63,7 @@ export default function Login() {
             {showPassword ? 'Hide' : 'Show'}
           </span>
         </div>
-        <p><Link to="/forgot-password">Forgot password?</Link></p>
+        {/* <p><Link to="/forgot-password">Forgot password?</Link></p> */}
         <button type="submit">Login</button>
       </form>
       <p>No account? <Link to="/signup">Sign up</Link></p>

@@ -34,32 +34,19 @@ module.exports = (User, Shop) => {
 
       const hashedPassword = await bcrypt.hash(password, 10);
 
-      const rawToken = crypto.randomBytes(32).toString('hex');
-      const hashedToken = crypto.createHash('sha256').update(rawToken).digest('hex');
-
       const user = new User({
         name,
         email,
         phone,
         password: hashedPassword,
         shopId,
-        verificationToken: hashedToken
+        isVerified: true // email verification disabled until a custom domain is set up
         // role defaults to 'customer' automatically
       });
 
       await user.save();
 
-      const verifyUrl = `${process.env.FRONTEND_URL}/verify-email/${rawToken}`;
-      await resend.emails.send({
-        from: 'Meloshop <onboarding@resend.dev>',
-        to: email,
-        subject: 'Verify your email',
-        html: `<p>Welcome! Please verify your email to activate your account.</p>
-               <p><a href="${verifyUrl}">Click here to verify your email</a></p>
-               <p>This link expires in 24 hours.</p>`
-      });
-
-      res.status(201).json({ message: 'Signup successful. Please check your email to verify your account.' });
+      res.status(201).json({ message: 'Signup successful. You can now log in.' });
     } catch (err) {
       res.status(500).json({ message: 'Server error', error: err.message });
     }
@@ -134,11 +121,11 @@ router.post('/login', async (req, res) => {
       }
 
       // Block login until the user has verified their email
-      if (!user.isVerified) {
+     /* if (!user.isVerified) {
         return res.status(403).json({
           message: 'Please verify your email before logging in. Check your inbox for the verification link.'
         });
-      }
+      } */
 
       // Block login for anyone belonging to a held shop (admin, delivery, or customer)
 

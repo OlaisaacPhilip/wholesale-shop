@@ -79,6 +79,9 @@ export default function Signup() {
             {showPassword ? 'Hide' : 'Show'}
           </span>
         </div>
+        <p style={{ fontSize: '13px', color: '#666', marginTop: '4px' }}>
+          Save this password somewhere safe (e.g. your Google/Chrome password manager) — it'll be needed to log in.
+        </p>
         <button type="submit">Sign Up</button>
       </form>
       <p>Already have an account? <Link to="/login">Login</Link></p>

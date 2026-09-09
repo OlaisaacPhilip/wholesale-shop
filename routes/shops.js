@@ -48,9 +48,6 @@ module.exports = (Shop, User) => {
 
       const hashedPassword = await bcrypt.hash(password, 10);
 
-      const rawToken = crypto.randomBytes(32).toString('hex');
-      const hashedToken = crypto.createHash('sha256').update(rawToken).digest('hex');
-
       const shop = new Shop({
         name,
         ownerName,
@@ -59,20 +56,10 @@ module.exports = (Shop, User) => {
         pendingPassword: hashedPassword,
         status: 'pending',
         plan: plan === 'premium' ? 'premium' : 'free',
-        verificationToken: hashedToken
+        emailVerified: true // email verification disabled until a custom domain is set up
       });
 
       await shop.save();
-
-      const verifyUrl = `${process.env.FRONTEND_URL}/verify-shop/${rawToken}`;
-      await resend.emails.send({
-        from: 'Meloshop <onboarding@resend.dev>',
-        to: ownerEmail,
-        subject: 'Verify your email — Shop Application',
-        html: `<p>Thanks for applying! Please verify your email to confirm your shop application.</p>
-               <p><a href="${verifyUrl}">Click here to verify your email</a></p>
-               <p>This link expires in 24 hours.</p>`
-      });
 
       res.status(201).json({ message: 'Application submitted', shopId: shop._id, status: shop.status });
     } catch (err) {
