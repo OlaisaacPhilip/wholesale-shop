@@ -3,18 +3,9 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const router = express.Router();
 const crypto = require('crypto');
-const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
 
-const transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com',
-  port: 587,
-  secure: false, 
-  family: 4,
-  auth: {
-    user: process.env.GMAIL_USER,
-    pass: process.env.GMAIL_APP_PASSWORD
-  }
-});
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 module.exports = (User, Shop) => {
 
@@ -59,8 +50,8 @@ module.exports = (User, Shop) => {
       await user.save();
 
       const verifyUrl = `${process.env.FRONTEND_URL}/verify-email/${rawToken}`;
-      await transporter.sendMail({
-        from: `"Meloshop" <${process.env.GMAIL_USER}>`,
+      await resend.emails.send({
+        from: 'Meloshop <onboarding@resend.dev>',
         to: email,
         subject: 'Verify your email',
         html: `<p>Welcome! Please verify your email to activate your account.</p>
@@ -185,8 +176,8 @@ console.log('forgot-password lookup:', email, user ? 'FOUND' : 'NOT FOUND');
 
     const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${rawToken}`;
 
-    await transporter.sendMail({
-      from: `"Meloshop" <${process.env.GMAIL_USER}>`,
+    await resend.emails.send({
+      from: 'Meloshop <onboarding@resend.dev>',
       to: user.email,
       subject: 'Password Reset Request',
       html: `<p>You requested a password reset.</p>

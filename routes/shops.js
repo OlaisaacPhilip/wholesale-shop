@@ -2,19 +2,10 @@ const express = require('express');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
-const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
 const router = express.Router();
 
-const transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com',
-  port: 587,
-  secure: false, 
-  family: 4,
-  auth: {
-    user: process.env.GMAIL_USER,
-    pass: process.env.GMAIL_APP_PASSWORD
-  }
-});
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 function auth(req, res, next) {
   const authHeader = req.headers.authorization;
@@ -74,8 +65,8 @@ module.exports = (Shop, User) => {
       await shop.save();
 
       const verifyUrl = `${process.env.FRONTEND_URL}/verify-shop/${rawToken}`;
-      await transporter.sendMail({
-        from: process.env.GMAIL_USER,
+      await resend.emails.send({
+        from: 'Meloshop <onboarding@resend.dev>',
         to: ownerEmail,
         subject: 'Verify your email — Shop Application',
         html: `<p>Thanks for applying! Please verify your email to confirm your shop application.</p>
@@ -201,8 +192,8 @@ module.exports = (Shop, User) => {
       // nothing left afterward to explain why (no shop doc, no login-time lookup)
       const { reason } = req.body;
       try {
-        await transporter.sendMail({
-          from: `"Meloshop" <${process.env.GMAIL_USER}>`,
+        await resend.emails.send({
+          from: 'Meloshop <onboarding@resend.dev>',
           to: shop.ownerEmail,
           subject: 'Your Shop Application Was Not Approved',
           html: `<p>Your application for "${shop.name}" was not approved${reason ? ': ' + reason : '.'}</p>
