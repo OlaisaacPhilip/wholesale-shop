@@ -75,6 +75,7 @@ export default function ProductList() {
             <button onClick={() => navigate('/dashboard')}>Dashboard</button>
           )}
           {user?.role === 'customer' && <button onClick={() => navigate('/cart')}>View Cart</button>}
+          {user?.role === 'customer' && <button onClick={() => navigate('/feedback')}>Feedback</button>}
           <button onClick={() => { logout(); navigate('/login'); }}>Logout</button>
         </div>
       </div>

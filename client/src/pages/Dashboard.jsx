@@ -43,6 +43,8 @@ export default function Dashboard() {
             <>
               <button onClick={() => navigate('/products')}>Manage Products</button>
               <button onClick={() => navigate('/manage-team')}>Manage Team</button>
+              <button onClick={() => navigate('/shop-feedback')}>Customer Feedback</button>
+              <button onClick={() => navigate('/platform-feedback')}>Feedback to Meloshop</button>
             </>
           )}
           {user?.role === 'delivery' && (

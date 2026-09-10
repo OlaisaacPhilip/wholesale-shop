@@ -3,7 +3,7 @@ import axios from 'axios';
  const api = axios.create({
   baseURL: 'https://wholesale-shop-0pi1.onrender.com/api'
 }); 
-/* const api = axios.create({
+ /* const api = axios.create({
   baseURL: 'http://localhost:5000/api'
 }); */
 

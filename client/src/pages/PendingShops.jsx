@@ -18,6 +18,7 @@ export default function PendingShops() {
       const res = await api.get('/shops/pending');
       setShops(res.data);
     } catch (err) {
+      console.error('Pending shops error:', err.response?.status, err.response?.data);
       setError('Failed to load pending shops');
     }
   }

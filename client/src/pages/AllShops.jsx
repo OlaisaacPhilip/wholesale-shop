@@ -11,12 +11,14 @@ function daysRemaining(trialEndsAt) {
 
 export default function AllShops() {
   const [shops, setShops] = useState([]);
+  const [totals, setTotals] = useState(null);
   const [error, setError] = useState('');
   const { logout } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
     loadShops();
+    loadTotals();
   }, []);
 
   async function loadShops() {
@@ -25,6 +27,15 @@ export default function AllShops() {
       setShops(res.data);
     } catch (err) {
       setError('Failed to load shops');
+    }
+  }
+
+  async function loadTotals() {
+    try {
+      const res = await api.get('/shops/stats/overview');
+      setTotals(res.data);
+    } catch (err) {
+      setError('Failed to load overview stats');
     }
   }
 
@@ -72,6 +83,7 @@ export default function AllShops() {
         <h2>All Shops</h2>
         <div>
           <button onClick={() => navigate('/pending-shops')}>Pending</button>
+          <button onClick={() => navigate('/platform-feedback-inbox')}>Feedback</button>
           <button onClick={() => { logout(); navigate('/login'); }}>Logout</button>
         </div>
       </div>
@@ -87,6 +99,7 @@ export default function AllShops() {
             <p>Status: <strong>{shop.status}</strong></p>
             <p>Subscription: {shop.subscriptionStatus}</p>
             <p>Plan: <strong>{shop.plan === 'premium' ? 'Premium' : 'Free'}</strong></p>
+            <p>Customers: {shop.customerCount} | Delivery: {shop.deliveryCount}</p>
             {shop.subscriptionStatus === 'trial' && shop.status === 'active' && (
               <p style={{ color: days <= 7 ? '#c62828' : 'inherit' }}>
                 {shop.plan === 'premium'
@@ -111,6 +124,15 @@ export default function AllShops() {
           </div>
         );
       })}
+
+      {totals && (
+        <div className="card">
+          <h3>Overview</h3>
+          <p>Total Active Shops: <strong>{totals.totalActiveShops}</strong></p>
+          <p>Total Customers: <strong>{totals.totalCustomers}</strong></p>
+          <p>Total Delivery Persons: <strong>{totals.totalDelivery}</strong></p>
+        </div>
+      )}
     </div>
   );
 }

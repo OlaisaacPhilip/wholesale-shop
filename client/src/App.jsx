@@ -17,12 +17,16 @@ import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import VerifyEmail from './pages/VerifyEmail';
 import VerifyShopEmail from './pages/VerifyShopEmail';
+import SubmitShopFeedback from './pages/SubmitShopFeedback';
+import ShopFeedbackInbox from './pages/ShopFeedbackInbox';
+import SubmitPlatformFeedback from './pages/SubmitPlatformFeedback';
+import PlatformFeedbackInbox from './pages/PlatformFeedbackInbox';
+
 
 function App() {
   return (
     <Routes>
       <Route path="/" element={<Navigate to="/login" />} />
-      <Route path="/signup" element={<Signup />} />
       <Route path="/signup" element={<Signup />} />
       <Route path="/shop-apply" element={<ShopApply />} />
       <Route path="/login" element={<Login />} />
@@ -41,6 +45,10 @@ function App() {
 <Route path="/reset-password/:token" element={<ResetPassword />} />
       <Route path="/verify-email/:token" element={<VerifyEmail />} />
       <Route path="/verify-shop/:token" element={<VerifyShopEmail />} />
+      <Route path="/feedback" element={<SubmitShopFeedback />} />
+      <Route path="/shop-feedback" element={<ShopFeedbackInbox />} />
+      <Route path="/platform-feedback" element={<SubmitPlatformFeedback />} />
+      <Route path="/platform-feedback-inbox" element={<PlatformFeedbackInbox />} />
     </Routes>
   );
 }

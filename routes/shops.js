@@ -98,20 +98,42 @@ module.exports = (Shop, User) => {
     }
   });
 
-  // ---------- GET all pending shops (superadmin only) ----------
-  router.get('/pending', auth, superadminOnly, async (req, res) => {
+// ---------- GET all shops, any status (superadmin only) — includes customer/delivery counts per shop ----------
+  router.get('/', auth, superadminOnly, async (req, res) => {
     try {
-      const shops = await Shop.find({ status: 'pending' }).sort({ createdAt: 1 });
-      res.json(shops);
+      const shops = await Shop.find().sort({ createdAt: -1 }).lean();
+
+      const shopsWithCounts = await Promise.all(
+        shops.map(async (shop) => {
+          const customerCount = await User.countDocuments({ shopId: shop._id, role: 'customer' });
+          const deliveryCount = await User.countDocuments({ shopId: shop._id, role: 'delivery' });
+          return { ...shop, customerCount, deliveryCount };
+        })
+      );
+
+      res.json(shopsWithCounts);
     } catch (err) {
       res.status(500).json({ message: 'Server error', error: err.message });
     }
   });
 
-// ---------- GET all shops, any status (superadmin only) ----------
-  router.get('/', auth, superadminOnly, async (req, res) => {
+// ---------- GET overall totals across the whole app (superadmin only) ----------
+  router.get('/stats/overview', auth, superadminOnly, async (req, res) => {
     try {
-      const shops = await Shop.find().sort({ createdAt: -1 });
+      const totalActiveShops = await Shop.countDocuments({ status: 'active' });
+      const totalCustomers = await User.countDocuments({ role: 'customer' });
+      const totalDelivery = await User.countDocuments({ role: 'delivery' });
+
+      res.json({ totalActiveShops, totalCustomers, totalDelivery });
+    } catch (err) {
+      res.status(500).json({ message: 'Server error', error: err.message });
+    }
+  });
+
+  // ---------- GET all pending shops (superadmin only) ----------
+  router.get('/pending', auth, superadminOnly, async (req, res) => {
+    try {
+      const shops = await Shop.find({ status: 'pending' }).sort({ createdAt: 1 });
       res.json(shops);
     } catch (err) {
       res.status(500).json({ message: 'Server error', error: err.message });

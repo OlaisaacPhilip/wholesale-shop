@@ -124,6 +124,24 @@ const orderSchema = new mongoose.Schema({
 
 const Order = mongoose.model('Order', orderSchema);
 
+// ---------- SHOP FEEDBACK MODEL (customer -> shop admin) ----------
+const shopFeedbackSchema = new mongoose.Schema({
+  shopId: { type: mongoose.Schema.Types.ObjectId, ref: 'Shop', required: true },
+  customerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  message: { type: String, required: true }
+}, { timestamps: true });
+
+const ShopFeedback = mongoose.model('ShopFeedback', shopFeedbackSchema);
+
+// ---------- PLATFORM FEEDBACK MODEL (shop admin -> superadmin) ----------
+const platformFeedbackSchema = new mongoose.Schema({
+  shopId: { type: mongoose.Schema.Types.ObjectId, ref: 'Shop', required: true },
+  adminId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  message: { type: String, required: true }
+}, { timestamps: true });
+
+const PlatformFeedback = mongoose.model('PlatformFeedback', platformFeedbackSchema);
+
 // ---------- Routes ----------
 const authRoutes = require('./routes/auth')(User, Shop);
 app.use('/api/auth', authRoutes);
@@ -152,6 +170,9 @@ app.use('/api/finance', financeRoutes);
 //shop owner to promote user to rider
 const userRoutes = require('./routes/users')(User);
 app.use('/api/users', userRoutes);
+
+const feedbackRoutes = require('./routes/feedback')(ShopFeedback, PlatformFeedback, User);
+app.use('/api/feedback', feedbackRoutes);
 
 
 // ---------- Test route ----------
