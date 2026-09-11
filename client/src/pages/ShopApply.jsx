@@ -95,7 +95,7 @@ export default function ShopApply() {
         <div>
           <label>
             <input type="radio" name="plan" value="premium" checked={form.plan === 'premium'} onChange={handleChange} />
-            Premium — unlimited products, larger image uploads (₦5000/month)
+            Premium — unlimited products, larger image uploads (₦10,981/month)
           </label>
         </div>
 

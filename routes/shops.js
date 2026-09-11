@@ -255,7 +255,7 @@ module.exports = (Shop, User) => {
     try {
       const shop = await Shop.findByIdAndUpdate(
         req.params.id,
-        { plan: 'free', subscriptionStatus: 'expired' },
+        { plan: 'free', subscriptionStatus: 'expired', maxProducts: 100 },
         { new: true }
       );
       if (!shop) return res.status(404).json({ message: 'Shop not found' });
@@ -270,7 +270,7 @@ module.exports = (Shop, User) => {
     try {
       const shop = await Shop.findByIdAndUpdate(
         req.params.id,
-        { plan: 'premium', subscriptionStatus: 'paid' },
+        { plan: 'premium', subscriptionStatus: 'paid', maxProducts: 100000 }, // effectively unlimited
         { new: true }
       );
       if (!shop) return res.status(404).json({ message: 'Shop not found' });
