@@ -57,6 +57,33 @@ export default function Help() {
       </div>
 
       <div className="card">
+        <h4>Video Walkthroughs</h4>
+        <p>Watch short videos covering the most common tasks:</p>
+        <ul style={{ paddingLeft: '20px' }}>
+          <li style={{ marginBottom: '10px' }}>
+            <a href="https://youtube.com/shorts/fho1l2u60L0?si=kvOoC0XCDqx3Lbja" target="_blank" rel="noopener noreferrer">
+              Register your Shop in Meloshop App
+            </a>
+          </li>
+          <li style={{ marginBottom: '10px' }}>
+            <a href="https://youtube.com/shorts/heuDeFUGZQg?si=gLrFQ8QuG264CRUp" target="_blank" rel="noopener noreferrer">
+              List/Add Your Shop Products
+            </a>
+          </li>
+          <li style={{ marginBottom: '10px' }}>
+            <a href="https://youtube.com/shorts/BjnYm1ljXKI?si=9O-L1yFlhyGuWQQK" target="_blank" rel="noopener noreferrer">
+              Register as a Customer to a Shop
+            </a>
+          </li>
+          <li style={{ marginBottom: '10px' }}>
+            <a href="https://youtube.com/shorts/M7vJ_kE8R94?si=QJLKrE0L0To-YHpC" target="_blank" rel="noopener noreferrer">
+              Assign a Delivery Person to Your Shop
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <div className="card">
         <h4>Need More Help?</h4>
         <p>If you're still having trouble, reach out directly:</p>
         <p><strong>Call:</strong> 07077941592</p>
