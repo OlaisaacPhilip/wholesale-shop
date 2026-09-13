@@ -75,8 +75,8 @@ export default function Login() {
         {/* <p><Link to="/forgot-password">Forgot password?</Link></p> */}
         <button type="submit" disabled={loading}>{loading ? 'Logging in...' : 'Login'}</button>
       </form>
-      <p>Want to register as customer? <Link to="/signup">Sign up </Link></p>
-        <p>Want to register your shop? <Link to="/shop-apply">Apply here</Link></p>
+      <p>To register as customer? <Link to="/signup">Sign up </Link></p>
+        <p>To register your shop? <Link to="/shop-apply">Apply here</Link></p>
       <p><Link to="/help">Need help using the app?</Link></p>
     </div>
   );
