@@ -84,6 +84,7 @@ export default function AllShops() {
         <div>
           <button onClick={() => navigate('/pending-shops')}>Pending</button>
           <button onClick={() => navigate('/platform-feedback-inbox')}>Feedback</button>
+          <button onClick={() => navigate('/referral-payouts')}>Referral Payouts</button>
           <button onClick={() => { logout(); navigate('/login'); }}>Logout</button>
         </div>
       </div>

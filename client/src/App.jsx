@@ -21,6 +21,8 @@ import SubmitShopFeedback from './pages/SubmitShopFeedback';
 import ShopFeedbackInbox from './pages/ShopFeedbackInbox';
 import SubmitPlatformFeedback from './pages/SubmitPlatformFeedback';
 import PlatformFeedbackInbox from './pages/PlatformFeedbackInbox';
+import MyReferralCode from './pages/MyReferralCode';
+import ReferralPayouts from './pages/ReferralPayouts';
 
 
 function App() {
@@ -49,6 +51,8 @@ function App() {
       <Route path="/shop-feedback" element={<ShopFeedbackInbox />} />
       <Route path="/platform-feedback" element={<SubmitPlatformFeedback />} />
       <Route path="/platform-feedback-inbox" element={<PlatformFeedbackInbox />} />
+      <Route path="/my-referral-code" element={<MyReferralCode />} />
+      <Route path="/referral-payouts" element={<ReferralPayouts />} />
     </Routes>
   );
 }

@@ -7,6 +7,7 @@ export default function Login() {
   const [form, setForm] = useState({ email: '', password: '' });
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { login } = useAuth();
 
@@ -17,6 +18,7 @@ export default function Login() {
   async function handleSubmit(e) {
     e.preventDefault();
     setError('');
+    setLoading(true);
     try {
       const res = await api.post('/auth/login', form);
       login(res.data.user, res.data.token);
@@ -31,12 +33,21 @@ export default function Login() {
       }
     } catch (err) {
       setError(err.response?.data?.message || 'Login failed');
+    } finally {
+      setLoading(false);
+    }
+  }
     }
   }
 
   return (
     <div>
       <h2>Login</h2>
+      {loading && (
+        <p style={{ fontSize: '13px', color: '#666' }}>
+          Logging in... this may take up to a minute if the app is waking up after being idle.
+        </p>
+      )}
       {error && <p style={{ color: 'red' }}>{error}</p>}
       <form onSubmit={handleSubmit}>
         <input name="email" type="email" placeholder="Email" onChange={handleChange} required />
@@ -64,7 +75,7 @@ export default function Login() {
           </span>
         </div>
         {/* <p><Link to="/forgot-password">Forgot password?</Link></p> */}
-        <button type="submit">Login</button>
+        <button type="submit" disabled={loading}>{loading ? 'Logging in...' : 'Login'}</button>
       </form>
       <p>No account? <Link to="/signup">Sign up</Link></p>
         <p>Want to Open your eShop? <Link to="/shop-apply">Apply here</Link></p>

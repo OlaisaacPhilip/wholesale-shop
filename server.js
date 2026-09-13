@@ -38,10 +38,26 @@ resetPasswordExpires: { type: Date },
     default: null // null only for superadmin, who isn't tied to one shop
   },
   isVerified: { type: Boolean, default: false },
-  verificationToken: { type: String }
+  verificationToken: { type: String },
+  referralCode: { type: String, unique: true, sparse: true }
 }, { timestamps: true });
 
 const User = mongoose.model('User', userSchema);
+
+// ---------- REFERRAL MODEL — tracks a referral and its payout status ----------
+const referralSchema = new mongoose.Schema({
+  referrerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  shopId: { type: mongoose.Schema.Types.ObjectId, ref: 'Shop', required: true },
+  amount: { type: Number, default: 3000 },
+  status: {
+    type: String,
+    enum: ['pending', 'paid'],
+    default: 'pending'
+  },
+  paidAt: { type: Date }
+}, { timestamps: true });
+
+const Referral = mongoose.model('Referral', referralSchema);
 
 // ---------- SHOP MODEL ----------
 const shopSchema = new mongoose.Schema({
@@ -69,7 +85,8 @@ const shopSchema = new mongoose.Schema({
   maxProducts: { type: Number, default: 100 },
   rejectionReason: { type: String, default: '' },
   emailVerified: { type: Boolean, default: false },
-  verificationToken: { type: String }
+  verificationToken: { type: String },
+  referredByCode: { type: String }
 }, { timestamps: true });
 
 const Shop = mongoose.model('Shop', shopSchema);
@@ -146,7 +163,7 @@ const PlatformFeedback = mongoose.model('PlatformFeedback', platformFeedbackSche
 const authRoutes = require('./routes/auth')(User, Shop);
 app.use('/api/auth', authRoutes);
 
-const shopRoutes = require('./routes/shops')(Shop, User);
+const shopRoutes = require('./routes/shops')(Shop, User, Referral);
 app.use('/api/shops', shopRoutes);
 
 const productRoutes = require('./routes/products')(Product, Shop);
@@ -173,6 +190,9 @@ app.use('/api/users', userRoutes);
 
 const feedbackRoutes = require('./routes/feedback')(ShopFeedback, PlatformFeedback, User);
 app.use('/api/feedback', feedbackRoutes);
+
+const referralRoutes = require('./routes/referrals')(Referral, User, Shop);
+app.use('/api/referrals', referralRoutes);
 
 
 // ---------- Test route ----------

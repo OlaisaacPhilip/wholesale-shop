@@ -26,12 +26,12 @@ function superadminOnly(req, res, next) {
   next();
 }
 
-module.exports = (Shop, User) => {
+module.exports = (Shop, User, Referral) => {
 
   // ---------- POST apply as a new shop (public, no login needed yet) ----------
   router.post('/apply', async (req, res) => {
     try {
-      const { name, ownerName, ownerEmail, ownerPhone, password, plan } = req.body;
+      const { name, ownerName, ownerEmail, ownerPhone, password, plan, referralCode } = req.body;
 
       const existingShopName = await Shop.findOne({
         name: { $regex: `^${name}$`, $options: 'i' },
@@ -56,7 +56,8 @@ module.exports = (Shop, User) => {
         pendingPassword: hashedPassword,
         status: 'pending',
         plan: plan === 'premium' ? 'premium' : 'free',
-        emailVerified: true // email verification disabled until a custom domain is set up
+        emailVerified: true, // email verification disabled until a custom domain is set up
+        referredByCode: plan === 'premium' && referralCode ? referralCode.trim().toUpperCase() : undefined
       });
 
       await shop.save();
@@ -171,6 +172,18 @@ module.exports = (Shop, User) => {
       });
 
       await adminUser.save();
+
+      // If this shop used a valid referral code on a premium signup, record the payout owed
+      if (shop.plan === 'premium' && shop.referredByCode) {
+        const referrer = await User.findOne({ referralCode: shop.referredByCode });
+        if (referrer) {
+          await Referral.create({
+            referrerId: referrer._id,
+            shopId: shop._id,
+            amount: 3000
+          });
+        }
+      }
 
       shop.status = 'active';
       shop.pendingPassword = undefined;

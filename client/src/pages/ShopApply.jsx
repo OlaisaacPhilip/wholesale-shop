@@ -4,7 +4,7 @@ import api from '../api';
 
 export default function ShopApply() {
   const [form, setForm] = useState({
-    name: '', ownerName: '', ownerEmail: '', ownerPhone: '', password: '', plan: 'free'
+    name: '', ownerName: '', ownerEmail: '', ownerPhone: '', password: '', plan: 'free', referralCode: ''
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -88,16 +88,19 @@ export default function ShopApply() {
         <h3>Choose a Plan</h3>
         <div>
           <label>
-            <input type="radio" name="plan" value="free" checked={form.plan === 'free'} onChange={handleChange} />
-            Free — up to 100 products, 1MB image uploads
-          </label>
-        </div>
-        <div>
-          <label>
             <input type="radio" name="plan" value="premium" checked={form.plan === 'premium'} onChange={handleChange} />
-            Premium — unlimited products, larger image uploads (₦10,981/month)
+            Premium — unlimited products, larger image uploads (₦5000/month)
           </label>
         </div>
+
+        {form.plan === 'premium' && (
+          <input
+            name="referralCode"
+            placeholder="Referral Code (optional)"
+            value={form.referralCode}
+            onChange={handleChange}
+          />
+        )}
 
         <button type="submit" disabled={loading}>
           {loading ? 'Submitting...' : 'Submit Application'}

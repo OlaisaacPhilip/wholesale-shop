@@ -53,6 +53,7 @@ export default function Dashboard() {
               <button onClick={() => navigate('/my-deliveries')}>My Deliveries</button>
             </>
           )}
+          {user?.role !== 'superadmin' && <button onClick={() => navigate('/my-referral-code')}>My Referral Code</button>}
           <button onClick={() => { logout(); navigate('/login'); }}>Logout</button>
         </div>
       </div>
