@@ -10,7 +10,7 @@ export default defineConfig({
       manifest: {
         name: 'Meloshop',
         short_name: 'Meloshop',
-        description: 'Order and deliver wholesale products',
+        description: 'Where Your Shop Meets Your Customer',
         theme_color: '#1a1a1a',
         background_color: '#ffffff',
         display: 'standalone',
