@@ -88,8 +88,14 @@ export default function ShopApply() {
         <h3>Choose a Plan</h3>
         <div>
           <label>
+            <input type="radio" name="plan" value="free" checked={form.plan === 'free'} onChange={handleChange} />
+            Free — up to 100 products, 1MB image uploads
+          </label>
+        </div>
+        <div>
+          <label>
             <input type="radio" name="plan" value="premium" checked={form.plan === 'premium'} onChange={handleChange} />
-            Premium — unlimited products, larger image uploads (₦5000/month)
+            Premium — unlimited products, larger image uploads (₦10,981/month)
           </label>
         </div>
 
