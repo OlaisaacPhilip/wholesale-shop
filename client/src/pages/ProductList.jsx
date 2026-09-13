@@ -77,7 +77,7 @@ export default function ProductList() {
           {user?.role === 'customer' && <button onClick={() => navigate('/cart')}>View Cart</button>}
           {user?.role === 'customer' && <button onClick={() => navigate('/feedback')}>Feedback</button>}
           <button onClick={() => navigate('/my-referral-code')}>My Referral Code</button>
-          <button onClick={() => { logout(); navigate('/login'); }}>Logout</button>}
+          <button onClick={() => { logout(); navigate('/login'); }}>Logout</button>
           <button onClick={() => { logout(); navigate('/login'); }}>Logout</button>
         </div>
       </div>
